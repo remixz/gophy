@@ -71,3 +71,27 @@ func (c *Client) Search(query string, limit int) ([]GiphyGif, error) {
         return nil, errors.New("No GIFs found. :(")
     }
 }
+
+func (c *Client) Random(query string) (map[string]string, error) {
+    v := url.Values{}
+    v.Set("api_key", c.api_key)
+    v.Set("tag", url.QueryEscape(strings.Replace(query, " ", "-", -1)))
+    req := GIPHY_API_HOST + "random?" + v.Encode()
+    resp, err := http.Get(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+    giphyResp := &struct{ Data map[string]string }{}
+    dec := json.NewDecoder(resp.Body)
+    if err := dec.Decode(giphyResp); err != nil {
+        return nil, err
+    }
+
+    if len(giphyResp.Data) > 0 {
+        return giphyResp.Data, nil
+    } else {
+        return nil, errors.New("No GIFs found. :(")
+    }
+
+}
